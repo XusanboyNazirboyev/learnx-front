@@ -2,6 +2,7 @@ import React from "react";
 import { ClipboardCheck, Trophy, Target, Star } from "lucide-react";
 import StatCard from "@/components/ui/StatCard";
 import { StatusBadge } from "@/pages/admin/AdminDashboard";
+// TODO: Replace mock exams and results with API data before production.
 import { exams, examResults } from "@/lib/mockData";
 
 const examStatus = {

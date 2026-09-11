@@ -2,6 +2,7 @@ import React from "react";
 import { Wallet, TrendingUp, TrendingDown, CalendarCheck, Star } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import StatCard from "@/components/ui/StatCard";
+// TODO: Replace mock reports with API data before production.
 import { reportSeries, groupAttendance, courseReports, formatMoney } from "@/lib/mockData";
 
 const tooltipStyle = { borderRadius: 12, border: "1px solid hsl(var(--border))", backgroundColor: "hsl(var(--popover))", color: "hsl(var(--popover-foreground))" };

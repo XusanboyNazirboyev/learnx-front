@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Search, BookOpen, Video, FileText, Presentation, Download } from "lucide-react";
+// TODO: Replace mock library resources with API data before production.
 import { libraryResources } from "@/lib/mockData";
 
 const typeMeta = {

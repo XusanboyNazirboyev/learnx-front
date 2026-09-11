@@ -2,6 +2,7 @@ import React from "react";
 import { MoreHorizontal, Users2 } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import { StatusBadge } from "@/pages/admin/AdminDashboard";
+// TODO: Replace mock groups with API data before production.
 import { groups } from "@/lib/mockData";
 
 export default function Groups() {

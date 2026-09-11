@@ -2,6 +2,7 @@ import React from "react";
 import { MoreHorizontal, Wallet } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import { StatusBadge } from "@/pages/admin/AdminDashboard";
+// TODO: Replace mock payments with API data before production.
 import { payments, formatMoney } from "@/lib/mockData";
 
 const methodLabel = { CARD: "Karta", CASH: "Naqd", TRANSFER: "O'tkazma" };

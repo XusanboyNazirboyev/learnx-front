@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Wallet, CalendarDays, BookOpen, Settings, CheckCheck, Bell } from "lucide-react";
+// TODO: Replace mock notifications with API data before production.
 import { notifications as initialNotifications } from "@/lib/mockData";
 
 const typeMeta = {

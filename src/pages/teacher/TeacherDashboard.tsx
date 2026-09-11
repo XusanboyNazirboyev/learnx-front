@@ -2,6 +2,7 @@ import React from "react";
 import { Users2, CalendarCheck, ClipboardList, BookOpen, Clock, MapPin, CheckCircle2, AlertCircle, ChevronRight } from "lucide-react";
 import StatCard from "@/components/ui/StatCard";
 import { StatusBadge } from "@/pages/admin/AdminDashboard";
+// TODO: Replace mock teacher dashboard data with API responses before production.
 import { teacherGroups, teacherLessons, homeworkToCheck } from "@/lib/mockData";
 
 export default function TeacherDashboard() {

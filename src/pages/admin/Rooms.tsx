@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+// TODO: Replace mock rooms with API data before production.
 import { rooms as initialRooms } from "@/lib/mockData";
 
 const statusMap = {

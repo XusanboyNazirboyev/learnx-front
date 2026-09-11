@@ -1,4 +1,8 @@
-# React + TypeScript + Vite
+# Learnix Frontend
+
+React + TypeScript + Vite + Radix UI + Tailwind CSS
+
+This frontend uses Radix UI primitives, shadcn-style components, Tailwind CSS, and class-variance-authority for its UI layer.
 
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
@@ -20,15 +24,18 @@ If you are developing a production application, we recommend enabling type-aware
 
 ```json
 {
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
+    "$schema": "./node_modules/oxlint/configuration_schema.json",
+    "plugins": ["react", "typescript", "oxc"],
+    "options": {
+        "typeAware": true
+    },
+    "rules": {
+        "react/rules-of-hooks": "error",
+        "react/only-export-components": [
+            "warn",
+            { "allowConstantExport": true }
+        ]
+    }
 }
 ```
 

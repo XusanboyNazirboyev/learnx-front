@@ -2,6 +2,7 @@ import React from "react";
 import { MoreHorizontal } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import { StatusBadge } from "@/pages/admin/AdminDashboard";
+// TODO: Replace mock students with API data before production.
 import { students, formatMoney } from "@/lib/mockData";
 
 export default function Students() {

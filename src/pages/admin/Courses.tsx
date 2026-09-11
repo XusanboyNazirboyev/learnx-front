@@ -2,6 +2,7 @@ import React from "react";
 import { Users, Clock, CalendarDays, MoreHorizontal } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import { StatusBadge } from "@/pages/admin/AdminDashboard";
+// TODO: Replace mock courses with API data before production.
 import { courses, formatMoney } from "@/lib/mockData";
 
 export default function Courses() {

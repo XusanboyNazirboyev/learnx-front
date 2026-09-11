@@ -2,6 +2,7 @@ import React from "react";
 import { Users, UserCog, Users2, BookOpen, Wallet, TrendingUp, CalendarCheck, Clock, MoreHorizontal } from "lucide-react";
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import StatCard from "@/components/ui/StatCard";
+// TODO: Replace mock dashboard metrics and charts with API responses before production.
 import { stats, revenueSeries, attendanceSeries, courseDistribution, students, formatMoney } from "@/lib/mockData";
 
 export default function AdminDashboard() {

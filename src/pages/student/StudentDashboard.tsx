@@ -2,6 +2,7 @@ import React from "react";
 import { Wallet, CalendarCheck, BookOpen, TrendingUp, Clock, MapPin, CheckCircle2, Star } from "lucide-react";
 import StatCard from "@/components/ui/StatCard";
 import { StatusBadge } from "@/pages/admin/AdminDashboard";
+// TODO: Replace mock student dashboard data with API responses before production.
 import { studentInfo, studentSchedule, studentHomework, studentPayments, formatMoney } from "@/lib/mockData";
 
 export default function StudentDashboard() {

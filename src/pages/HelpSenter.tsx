@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Search, LifeBuoy, Mail, Phone, MessageSquare } from "lucide-react";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+// TODO: Replace mock FAQs with API or CMS data before production.
 import { faqs } from "@/lib/mockData";
 
 export default function HelpCenter() {

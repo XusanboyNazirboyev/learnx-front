@@ -2,6 +2,7 @@ import React from "react";
 import { MoreHorizontal } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import { StatusBadge } from "@/pages/admin/AdminDashboard";
+// TODO: Replace mock teachers with API data before production.
 import { teachers, formatMoney } from "@/lib/mockData";
 
 const salaryLabel = { FIXED: "Belgilangan", PERCENTAGE: "Foiz", HOURLY: "Soatlik" };

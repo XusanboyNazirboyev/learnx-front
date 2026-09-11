@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Save, CheckCircle2, Users2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+// TODO: Replace mock groups and students with API data before production.
 import { teacherGroups, students } from "@/lib/mockData";
 
 const MARKS = [
