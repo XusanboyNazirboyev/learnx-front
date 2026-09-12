@@ -28,6 +28,16 @@ const request = async <T>(path: string, init: RequestInit = {}): Promise<T> => {
         throw error;
     }
 
+    if (
+        data &&
+        typeof data === "object" &&
+        "success" in data &&
+        data.success === true &&
+        "data" in data
+    ) {
+        return data.data as T;
+    }
+
     return data as T;
 };
 
@@ -37,6 +47,7 @@ const clearTokens = () => {
 };
 
 export const apiClient = {
+    request,
     async login(identifier: string, password: string) {
         const data = await request<{
             user: unknown;
@@ -52,9 +63,19 @@ export const apiClient = {
     me() {
         return request("/auth/me");
     },
-    logout(redirect = true) {
-        clearTokens();
-        if (redirect) window.location.href = "/login";
+    async logout(redirect = true) {
+        const refreshToken = localStorage.getItem("refreshToken");
+        try {
+            if (refreshToken && localStorage.getItem("accessToken")) {
+                await request("/auth/logout", {
+                    method: "POST",
+                    body: JSON.stringify({ refreshToken }),
+                });
+            }
+        } finally {
+            clearTokens();
+            if (redirect) window.location.href = "/login";
+        }
     },
     redirectToLogin() {
         window.location.href = "/login";

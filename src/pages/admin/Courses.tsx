@@ -1,14 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import { Users, Clock, CalendarDays, MoreHorizontal } from "lucide-react";
 import PageHeader from "@/components/ui/PageHeader";
 import { StatusBadge } from "@/pages/admin/AdminDashboard";
 // TODO: Replace mock courses with API data before production.
 import { courses, formatMoney } from "@/lib/mockData";
+import AdminFormDrawer from "@/components/admin/AdminFormDrawer";
 
 export default function Courses() {
+  const [open, setOpen] = useState(false);
+
   return (
     <div>
-      <PageHeader title="Kurslar" subtitle={`${courses.length} ta kurs`} actionLabel="Yangi kurs" />
+      <PageHeader title="Kurslar" subtitle={`${courses.length} ta kurs`} actionLabel="Yangi kurs" onAction={() => setOpen(true)} />
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {courses.map((c) => (
           <div key={c.id} className="bg-card rounded-2xl border border-border overflow-hidden hover:shadow-lg hover:shadow-foreground/5 transition-all">
@@ -39,6 +42,7 @@ export default function Courses() {
           </div>
         ))}
       </div>
+      <AdminFormDrawer kind="course" open={open} onOpenChange={setOpen} />
     </div>
   );
 }

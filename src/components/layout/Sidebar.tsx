@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useAuth } from "@/lib/AuthContext";
 import {
   GraduationCap, LayoutDashboard, Users, UserCog, BookOpen, Users2, CreditCard,
   CalendarDays, ClipboardCheck, FileBarChart, DoorOpen, Settings, LogOut,
@@ -75,6 +76,7 @@ function NavItem({ item, onNavigate, collapsed }) {
 }
 
 export default function Sidebar({ role = "ADMIN", onNavigate, collapsed = false, onToggle }) {
+  const { logout } = useAuth();
   const nav = role === "TEACHER" ? teacherNav : role === "STUDENT" ? studentNav : adminNav;
 
   return (
@@ -122,7 +124,7 @@ export default function Sidebar({ role = "ADMIN", onNavigate, collapsed = false,
             <Settings className="w-[18px] h-[18px] text-sidebar-foreground/50" />
             {!collapsed && "Sozlamalar"}
           </Link>
-          <button title={collapsed ? "Chiqish" : undefined} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-sidebar-foreground/70 hover:bg-destructive/20 hover:text-red-300 transition-all ${collapsed ? "justify-center" : ""}`}>
+          <button onClick={() => logout(true)} title={collapsed ? "Chiqish" : undefined} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-sidebar-foreground/70 hover:bg-destructive/20 hover:text-red-300 transition-all ${collapsed ? "justify-center" : ""}`}>
             <LogOut className="w-[18px] h-[18px]" />
             {!collapsed && "Chiqish"}
           </button>

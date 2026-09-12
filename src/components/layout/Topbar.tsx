@@ -5,7 +5,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { useAuth } from "@/lib/AuthContext";
 
 export default function Topbar({ title, subtitle, role = "ADMIN", onMenuClick }) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -80,7 +80,7 @@ export default function Topbar({ title, subtitle, role = "ADMIN", onMenuClick })
               </div>
               <Link to="/profile" onClick={() => setOpen(false)} className="w-full text-left px-4 py-2 text-sm hover:bg-muted">Profil</Link>
               <Link to="/settings" onClick={() => setOpen(false)} className="w-full text-left px-4 py-2 text-sm hover:bg-muted">Sozlamalar</Link>
-              <button className="w-full text-left px-4 py-2 text-sm text-destructive hover:bg-destructive/10">Chiqish</button>
+              <button onClick={() => logout(true)} className="w-full text-left px-4 py-2 text-sm text-destructive hover:bg-destructive/10">Chiqish</button>
             </div>
           )}
         </div>

@@ -628,6 +628,7 @@ export const notifications = [
         text: "Dilnoza Saidova Backend-N5 guruhiga 2 800 000 so'm to'lov qildi.",
         time: "10 daqiqa oldin",
         unread: true,
+        roles: ["ADMIN", "SUPERADMIN"],
     },
     {
         id: 2,
@@ -636,6 +637,7 @@ export const notifications = [
         text: "Frontend-N10 guruhining Juma kungi darsi 16:00 ga ko'chirildi.",
         time: "1 soat oldin",
         unread: true,
+        roles: ["ADMIN", "SUPERADMIN", "TEACHER", "STUDENT"],
     },
     {
         id: 3,
@@ -644,6 +646,7 @@ export const notifications = [
         text: "Zarina Kholmatova 'Flexbox layout' vazifasini topshirdi.",
         time: "3 soat oldin",
         unread: true,
+        roles: ["ADMIN", "SUPERADMIN", "TEACHER"],
     },
     {
         id: 4,
@@ -652,6 +655,7 @@ export const notifications = [
         text: "Madina Yuldasheva Frontend-N11 guruhiga qo'shildi.",
         time: "Kecha, 18:42",
         unread: false,
+        roles: ["ADMIN", "SUPERADMIN"],
     },
     {
         id: 5,
@@ -660,6 +664,8 @@ export const notifications = [
         text: "Jasur Toshmatovning 3 000 000 so'm to'lovi kutilmoqda.",
         time: "Kecha, 12:10",
         unread: false,
+        roles: ["ADMIN", "SUPERADMIN", "STUDENT"],
+        recipientPhone: "+998911223344",
     },
     {
         id: 6,
@@ -668,6 +674,7 @@ export const notifications = [
         text: "Learnix 2.4 versiyasi o'rnatildi — davomat moduli yaxshilandi.",
         time: "2 kun oldin",
         unread: false,
+        roles: ["ADMIN", "SUPERADMIN", "TEACHER", "STUDENT"],
     },
 ];
 

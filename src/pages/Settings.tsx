@@ -5,6 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/AuthContext";
 
 function ToggleRow({ id, label, description, checked, onChange }) {
   return (
@@ -19,6 +20,9 @@ function ToggleRow({ id, label, description, checked, onChange }) {
 }
 
 export default function Settings() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPERADMIN";
+  const canEditSystemSettings = user?.role === "SUPERADMIN";
   const [general, setGeneral] = useState({ name: "Learnix Ta'lim Markazi", language: "O'zbek", currency: "UZS (so'm)", timezone: "Asia/Tashkent (UTC+5)" });
   const [notif, setNotif] = useState({ email: true, push: true, lessons: true, payments: true, news: false });
   const [security, setSecurity] = useState({ twoFactor: false, sessions: true });
@@ -37,7 +41,7 @@ export default function Settings() {
         </div>
       )}
 
-      <div className="bg-card rounded-2xl border border-border p-6">
+      {isAdmin && <div className="bg-card rounded-2xl border border-border p-6">
         <div className="flex items-center gap-3 mb-5">
           <div className="w-10 h-10 rounded-xl bg-accent/10 text-accent flex items-center justify-center"><Globe className="w-5 h-5" /></div>
           <div>
@@ -48,27 +52,28 @@ export default function Settings() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2 sm:col-span-2">
             <Label htmlFor="s-name">Markaz nomi</Label>
-            <Input id="s-name" value={general.name} onChange={setField("name")} />
+            <Input id="s-name" value={general.name} onChange={setField("name")} disabled={!canEditSystemSettings} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="s-lang">Til</Label>
-            <Input id="s-lang" value={general.language} onChange={setField("language")} />
+            <Input id="s-lang" value={general.language} onChange={setField("language")} disabled={!canEditSystemSettings} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="s-currency">Valyuta</Label>
-            <Input id="s-currency" value={general.currency} onChange={setField("currency")} />
+            <Input id="s-currency" value={general.currency} onChange={setField("currency")} disabled={!canEditSystemSettings} />
           </div>
           <div className="space-y-2 sm:col-span-2">
             <Label htmlFor="s-tz">Vaqt zonasi</Label>
-            <Input id="s-tz" value={general.timezone} onChange={setField("timezone")} />
+            <Input id="s-tz" value={general.timezone} onChange={setField("timezone")} disabled={!canEditSystemSettings} />
           </div>
         </div>
         <div className="mt-5">
-          <Button onClick={() => setSaved(true)} className="navy-gradient hover:opacity-90">
+          <Button onClick={() => setSaved(true)} disabled={!canEditSystemSettings} className="navy-gradient hover:opacity-90">
             <Save className="w-4 h-4 mr-2" />Saqlash
           </Button>
+          {!canEditSystemSettings && <p className="mt-2 text-xs text-muted-foreground">Faqat SuperAdmin tizim parametrlarini o'zgartira oladi.</p>}
         </div>
-      </div>
+      </div>}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-card rounded-2xl border border-border p-6">

@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Wallet, CalendarDays, BookOpen, Settings, CheckCheck, Bell } from "lucide-react";
+import { useAuth } from "@/lib/AuthContext";
 // TODO: Replace mock notifications with API data before production.
 import { notifications as initialNotifications } from "@/lib/mockData";
 
@@ -11,8 +12,19 @@ const typeMeta = {
 };
 
 export default function Notifications() {
-  const [items, setItems] = useState(initialNotifications);
+  const { user } = useAuth();
+  const role = user?.role || "STUDENT";
+  const roleNotifications = initialNotifications.filter((notification) => (
+    notification.roles.includes(role) &&
+    (role !== "STUDENT" || !notification.recipientPhone || notification.recipientPhone === user?.phone)
+  ));
+  const [items, setItems] = useState(roleNotifications);
   const [filter, setFilter] = useState("ALL");
+
+  useEffect(() => {
+    setItems(roleNotifications);
+    setFilter("ALL");
+  }, [role]);
 
   const unread = items.filter((n) => n.unread).length;
   const filtered = filter === "ALL" ? items : items.filter((n) => n.type === filter);

@@ -9,8 +9,8 @@ import ScrollToTop from './components/ScrollToTop';
 import { Navigate } from 'react-router-dom';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import HelpCenter from '@/pages/HelpSenter';
-const Login = lazy(() => import('@/pages/Login'));
+import HelpCenter from '@/pages/HelpCenter';
+import Login from './pages/Login';
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'));
@@ -33,7 +33,7 @@ const SettingsPage = lazy(() => import('@/pages/Settings'));
 // Add page imports here
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
@@ -47,9 +47,7 @@ const AuthenticatedApp = () => {
   // Handle authentication errors
   if (authError) {
     if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
-      return null;
+      return <Navigate to="/login" replace />;
     }
   }
 
@@ -63,30 +61,38 @@ const AuthenticatedApp = () => {
 
         <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
           <Route path="/" element={<Navigate to="/admin" replace />} />
-          <Route element={<DashboardLayout role="ADMIN" />}>
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/students" element={<Students />} />
-            <Route path="/admin/teachers" element={<Teachers />} />
-            <Route path="/admin/courses" element={<Courses />} />
-            <Route path="/admin/groups" element={<Groups />} />
-            <Route path="/admin/payments" element={<Payments />} />
-            <Route path="/admin/rooms" element={<Rooms />} />
-            <Route path="/admin/reports" element={<Reports />} />
+          <Route element={<ProtectedRoute allowedRoles={['SUPERADMIN', 'ADMIN']} unauthenticatedElement={<Navigate to="/login" replace />} />}>
+            <Route element={<DashboardLayout role="ADMIN" />}>
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/students" element={<Students />} />
+              <Route path="/admin/teachers" element={<Teachers />} />
+              <Route path="/admin/courses" element={<Courses />} />
+              <Route path="/admin/groups" element={<Groups />} />
+              <Route path="/admin/payments" element={<Payments />} />
+              <Route path="/admin/rooms" element={<Rooms />} />
+              <Route path="/admin/reports" element={<Reports />} />
+            </Route>
           </Route>
-          <Route element={<DashboardLayout role="TEACHER" />}>
-            <Route path="/teacher" element={<TeacherDashboard />} />
-            <Route path="/teacher/attendance" element={<Attendance />} />
+          <Route element={<ProtectedRoute allowedRoles={['TEACHER']} unauthenticatedElement={<Navigate to="/login" replace />} />}>
+            <Route element={<DashboardLayout role="TEACHER" />}>
+              <Route path="/teacher" element={<TeacherDashboard />} />
+              <Route path="/teacher/attendance" element={<Attendance />} />
+            </Route>
           </Route>
-          <Route element={<DashboardLayout role="STUDENT" />}>
-            <Route path="/student" element={<StudentDashboard />} />
+          <Route element={<ProtectedRoute allowedRoles={['STUDENT']} unauthenticatedElement={<Navigate to="/login" replace />} />}>
+            <Route element={<DashboardLayout role="STUDENT" />}>
+              <Route path="/student" element={<StudentDashboard />} />
+            </Route>
           </Route>
-          <Route element={<DashboardLayout />}>
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/library" element={<Library />} />
-            <Route path="/exams" element={<Exams />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/help-center" element={<HelpCenter />} />
+          <Route element={<ProtectedRoute allowedRoles={['SUPERADMIN', 'ADMIN', 'TEACHER', 'STUDENT']} unauthenticatedElement={<Navigate to="/login" replace />} />}>
+            <Route element={<DashboardLayout />}>
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/library" element={<Library />} />
+              <Route path="/exams" element={<Exams />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/help-center" element={<HelpCenter />} />
+            </Route>
           </Route>
         </Route>
 

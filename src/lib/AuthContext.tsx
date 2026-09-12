@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { apiClient } from '@/api/apiClient';
+import { authApi } from '@/api/services/authApi';
 
 const AuthContext = createContext();
 
@@ -74,7 +75,7 @@ export const AuthProvider = ({ children }) => {
     try {
       // Now check if the user is authenticated
       setIsLoadingAuth(true);
-      const currentUser = await apiClient.me();
+      const currentUser = await authApi.me();
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
@@ -87,6 +88,7 @@ export const AuthProvider = ({ children }) => {
 
       // If user auth fails, it might be an expired token
       if (error.status === 401 || error.status === 403) {
+        apiClient.logout(false);
         setAuthError({
           type: 'auth_required',
           message: 'Authentication required'
