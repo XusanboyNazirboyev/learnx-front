@@ -1,3 +1,5 @@
+import type { User } from "./types";
+
 const apiBaseUrl = (
     import.meta.env.VITE_API_BASE_URL ||
     import.meta.env.VITE_API_URL ||
@@ -6,7 +8,29 @@ const apiBaseUrl = (
 
 type ApiError = Error & { status?: number; data?: unknown };
 
-const request = async <T>(path: string, init: RequestInit = {}): Promise<T> => {
+const isRefreshing = { current: false };
+const onUnauthorized: Array<() => void> = [];
+
+export const setUnauthorizedHandler = (fn: () => void) => {
+    onUnauthorized.push(fn);
+};
+
+const buildQuery = (query?: Record<string, string | number | undefined>) => {
+    if (!query) return "";
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(query)) {
+        if (value !== undefined && value !== null && value !== "") {
+            params.set(key, String(value));
+        }
+    }
+    const s = params.toString();
+    return s ? `?${s}` : "";
+};
+
+const rawRequest = async <T>(
+    path: string,
+    init: RequestInit = {},
+): Promise<T> => {
     const headers = new Headers(init.headers);
     headers.set("Content-Type", "application/json");
     const token = localStorage.getItem("accessToken");
@@ -27,7 +51,6 @@ const request = async <T>(path: string, init: RequestInit = {}): Promise<T> => {
         error.data = data;
         throw error;
     }
-
     if (
         data &&
         typeof data === "object" &&
@@ -37,7 +60,6 @@ const request = async <T>(path: string, init: RequestInit = {}): Promise<T> => {
     ) {
         return data.data as T;
     }
-
     return data as T;
 };
 
@@ -46,11 +68,58 @@ const clearTokens = () => {
     localStorage.removeItem("refreshToken");
 };
 
+const refreshTokens = async (): Promise<boolean> => {
+    if (isRefreshing.current) return false;
+    isRefreshing.current = true;
+    try {
+        const refreshToken = localStorage.getItem("refreshToken");
+        if (!refreshToken) return false;
+        const data = await rawRequest<{
+            tokens: { accessToken: string; refreshToken: string };
+        }>("/auth/refresh", {
+            method: "POST",
+            body: JSON.stringify({ refreshToken }),
+        });
+        localStorage.setItem("accessToken", data.tokens.accessToken);
+        localStorage.setItem("refreshToken", data.tokens.refreshToken);
+        return true;
+    } catch {
+        return false;
+    } finally {
+        isRefreshing.current = false;
+    }
+};
+
+const request = async <T>(
+    path: string,
+    init: RequestInit = {},
+    retry = true,
+): Promise<T> => {
+    try {
+        return await rawRequest<T>(path, init);
+    } catch (error) {
+        const apiError = error as ApiError;
+        if (
+            retry &&
+            apiError.status === 401 &&
+            localStorage.getItem("refreshToken")
+        ) {
+            const refreshed = await refreshTokens();
+            if (refreshed) return request<T>(path, init, false);
+            clearTokens();
+            onUnauthorized.forEach((fn) => fn());
+        }
+        throw error;
+    }
+};
+
 export const apiClient = {
     request,
+    buildQuery,
     async login(identifier: string, password: string) {
         const data = await request<{
-            user: unknown;
+            user: User;
+            mustChangePassword: boolean;
             tokens: { accessToken: string; refreshToken: string };
         }>("/auth/login", {
             method: "POST",
@@ -58,7 +127,7 @@ export const apiClient = {
         });
         localStorage.setItem("accessToken", data.tokens.accessToken);
         localStorage.setItem("refreshToken", data.tokens.refreshToken);
-        return data.user;
+        return { user: data.user, mustChangePassword: data.mustChangePassword };
     },
     me() {
         return request("/auth/me");
@@ -80,11 +149,10 @@ export const apiClient = {
     redirectToLogin() {
         window.location.href = "/login";
     },
-    requestPasswordReset() {
-        return Promise.reject(
-            new Error(
-                "Password reset is not available in the current backend.",
-            ),
-        );
+    changePassword(oldPassword: string, newPassword: string) {
+        return request("/auth/change-password", {
+            method: "PATCH",
+            body: JSON.stringify({ oldPassword, newPassword }),
+        });
     },
 };

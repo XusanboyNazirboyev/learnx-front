@@ -4,7 +4,7 @@ import type { Group, PaginationQuery, Paginated } from "../types";
 export const groupsApi = {
     list(query: PaginationQuery = {}) {
         return apiClient.request<Paginated<Group>>(
-            `/groups?${new URLSearchParams(query as Record<string, string>)}`,
+            `/groups${apiClient.buildQuery(query)}`,
         );
     },
 };

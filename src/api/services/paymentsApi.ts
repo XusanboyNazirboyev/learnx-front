@@ -10,7 +10,7 @@ export const paymentsApi = {
         } = {},
     ) {
         return apiClient.request<Paginated<Payment> & { totalAmount: number | string }>(
-            `/payments?${new URLSearchParams(query as Record<string, string>)}`,
+            `/payments${apiClient.buildQuery(query)}`,
         );
     },
     studentBalance(studentId: number) {

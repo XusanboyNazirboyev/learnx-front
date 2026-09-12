@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import { apiClient } from "@/api/apiClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +19,7 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      const user = await apiClient.login(identifier, password) as { role?: string };
+      const { user } = await apiClient.login(identifier, password);
       const roleDashboard = user.role === "STUDENT"
         ? "/student"
         : user.role === "TEACHER"
@@ -28,7 +27,10 @@ export default function Login() {
           : "/admin";
       window.location.href = returnTo === "/" ? roleDashboard : returnTo;
     } catch (err) {
-      setError(err.message || "Telefon, email yoki parol noto'g'ri");
+      const status = typeof err === "object" && err !== null && "status" in err
+        ? (err as { status?: number }).status
+        : undefined;
+      setError(status === 401 ? "Telefon, email yoki parol noto'g'ri" : "Kirish amalga oshmadi. Qayta urinib ko'ring.");
     } finally {
       setLoading(false);
     }
@@ -132,9 +134,6 @@ export default function Login() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password" className="text-sm font-medium">Parol</Label>
-                <Link to="/forgot-password" className="text-xs font-medium text-accent hover:underline">
-                  Parolni unutdingiz?
-                </Link>
               </div>
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-muted-foreground" />

@@ -12,7 +12,7 @@ export type Room = {
 export const roomsApi = {
     list(query: PaginationQuery = {}) {
         return apiClient.request<Paginated<Room>>(
-            `/rooms?${new URLSearchParams(query as Record<string, string>)}`,
+            `/rooms${apiClient.buildQuery(query)}`,
         );
     },
     create(name: string, capacity: number) {

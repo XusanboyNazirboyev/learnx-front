@@ -10,6 +10,18 @@ const DefaultFallback = () => (
   </div>
 );
 
+const SessionCheckError = ({ message, retry }: { message: string; retry: () => void }) => (
+  <div className="fixed inset-0 flex items-center justify-center p-6">
+    <div className="max-w-md rounded-xl border border-destructive/20 bg-card p-6 text-center shadow-sm">
+      <p className="font-semibold">Unable to verify your session</p>
+      <p className="mt-2 text-sm text-muted-foreground">{message}</p>
+      <button className="mt-4 text-sm font-medium text-primary hover:underline" onClick={retry}>
+        Try again
+      </button>
+    </div>
+  </div>
+);
+
 export default function ProtectedRoute({
   fallback = <DefaultFallback />,
   unauthenticatedElement,
@@ -27,8 +39,12 @@ export default function ProtectedRoute({
     return fallback;
   }
 
-  if (authError) {
+  if (authError?.type === 'auth_required') {
     return unauthenticatedElement;
+  }
+
+  if (authError?.type === 'unknown') {
+    return <SessionCheckError message={authError.message} retry={() => void checkUserAuth()} />;
   }
 
   if (!isAuthenticated) {

@@ -1,113 +1,81 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { apiClient } from '@/api/apiClient';
-import { authApi } from '@/api/services/authApi';
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { apiClient } from "@/api/apiClient";
+import { authApi } from "@/api/services/authApi";
+import type { User } from "@/api/types";
 
-const AuthContext = createContext();
+type AuthError = { type: "auth_required" | "unknown"; message: string };
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+interface AuthContextValue {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoadingAuth: boolean;
+  authError: AuthError | null;
+  authChecked: boolean;
+  logout: (shouldRedirect?: boolean) => void;
+  navigateToLogin: () => void;
+  checkUserAuth: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+const errorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback;
+
+const errorStatus = (error: unknown) =>
+  typeof error === "object" && error !== null && "status" in error
+    ? (error as { status?: number }).status
+    : undefined;
+
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
-  const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(true);
-  const [authError, setAuthError] = useState(null);
+  const [authError, setAuthError] = useState<AuthError | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
-  const [appPublicSettings, setAppPublicSettings] = useState(null); // Contains only { id, public_settings }
 
-  useEffect(() => {
-    checkAppState();
-  }, []);
+  const checkUserAuth = useCallback(async () => {
+    setIsLoadingAuth(true);
+    setAuthError(null);
 
-  const checkAppState = async () => {
-    try {
-      setIsLoadingPublicSettings(true);
-      setAuthError(null);
-
-      try {
-        setAppPublicSettings(null);
-
-        // If we got the app public settings successfully, check if user is authenticated
-        if (localStorage.getItem('accessToken')) {
-          await checkUserAuth();
-        } else {
-          setIsLoadingAuth(false);
-          setIsAuthenticated(false);
-          setAuthChecked(true);
-        }
-        setIsLoadingPublicSettings(false);
-      } catch (appError) {
-        console.error('App state check failed:', appError);
-
-        // Handle app-level errors
-        if (appError.status === 403 && appError.data?.extra_data?.reason) {
-          const reason = appError.data.extra_data.reason;
-          if (reason === 'auth_required') {
-            setAuthError({
-              type: 'auth_required',
-              message: 'Authentication required'
-            });
-          } else {
-            setAuthError({
-              type: reason,
-              message: appError.message
-            });
-          }
-        } else {
-          setAuthError({
-            type: 'unknown',
-            message: appError.message || 'Failed to load app'
-          });
-        }
-        setIsLoadingPublicSettings(false);
-        setIsLoadingAuth(false);
-      }
-    } catch (error) {
-      console.error('Unexpected error:', error);
-      setAuthError({
-        type: 'unknown',
-        message: error.message || 'An unexpected error occurred'
-      });
-      setIsLoadingPublicSettings(false);
+    if (!localStorage.getItem("accessToken")) {
+      setUser(null);
+      setIsAuthenticated(false);
+      setAuthChecked(true);
       setIsLoadingAuth(false);
+      return;
     }
-  };
 
-  const checkUserAuth = async () => {
     try {
-      // Now check if the user is authenticated
-      setIsLoadingAuth(true);
       const currentUser = await authApi.me();
       setUser(currentUser);
       setIsAuthenticated(true);
-      setIsLoadingAuth(false);
-      setAuthChecked(true);
     } catch (error) {
-      console.error('User auth check failed:', error);
-      setIsLoadingAuth(false);
+      setUser(null);
       setIsAuthenticated(false);
-      setAuthChecked(true);
 
-      // If user auth fails, it might be an expired token
-      if (error.status === 401 || error.status === 403) {
-        apiClient.logout(false);
+      if (errorStatus(error) === 401 || errorStatus(error) === 403) {
+        void apiClient.logout(false);
+        setAuthError({ type: "auth_required", message: "Authentication required" });
+      } else {
         setAuthError({
-          type: 'auth_required',
-          message: 'Authentication required'
+          type: "unknown",
+          message: errorMessage(error, "Unable to verify your session"),
         });
       }
+    } finally {
+      setAuthChecked(true);
+      setIsLoadingAuth(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    void checkUserAuth();
+  }, [checkUserAuth]);
 
   const logout = (shouldRedirect = true) => {
     setUser(null);
     setIsAuthenticated(false);
-
-    if (shouldRedirect) {
-      // Use the SDK's logout method which handles token cleanup and redirect
-      apiClient.logout(true);
-    } else {
-      // Just remove the token without redirect
-      apiClient.logout(false);
-    }
+    void apiClient.logout(shouldRedirect);
   };
 
   const navigateToLogin = () => {
@@ -115,19 +83,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      isAuthenticated,
-      isLoadingAuth,
-      isLoadingPublicSettings,
-      authError,
-      appPublicSettings,
-      authChecked,
-      logout,
-      navigateToLogin,
-      checkUserAuth,
-      checkAppState
-    }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, isLoadingAuth, authError, authChecked, logout, navigateToLogin, checkUserAuth }}>
       {children}
     </AuthContext.Provider>
   );
@@ -135,8 +91,6 @@ export const AuthProvider = ({ children }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 };

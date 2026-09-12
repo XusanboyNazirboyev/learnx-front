@@ -4,7 +4,7 @@ import type { Lesson, Paginated, PaginationQuery } from "../types";
 export const lessonsApi = {
     list(query: PaginationQuery & { groupId?: number; status?: string } = {}) {
         return apiClient.request<Paginated<Lesson>>(
-            `/lessons?${new URLSearchParams(query as Record<string, string>)}`,
+            `/lessons${apiClient.buildQuery(query)}`,
         );
     },
     attendance(lessonId: number) {

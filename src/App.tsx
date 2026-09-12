@@ -9,10 +9,8 @@ import ScrollToTop from './components/ScrollToTop';
 import { Navigate } from 'react-router-dom';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import HelpCenter from '@/pages/HelpCenter';
 import Login from './pages/Login';
-const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
-const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
+const HelpCenter = lazy(() => import('@/pages/HelpCenter'));
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'));
 const Students = lazy(() => import('@/pages/admin/Students'));
 const Teachers = lazy(() => import('@/pages/admin/Teachers'));
@@ -33,10 +31,9 @@ const SettingsPage = lazy(() => import('@/pages/Settings'));
 // Add page imports here
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
+  const { isLoadingAuth, authError } = useAuth();
 
-  // Show loading spinner while checking app public settings or auth
-  if (isLoadingPublicSettings || isLoadingAuth) {
+  if (isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
@@ -56,9 +53,6 @@ const AuthenticatedApp = () => {
     <Suspense fallback={<div className="fixed inset-0 flex items-center justify-center"><div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" /></div>}>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-
         <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
           <Route path="/" element={<Navigate to="/admin" replace />} />
           <Route element={<ProtectedRoute allowedRoles={['SUPERADMIN', 'ADMIN']} unauthenticatedElement={<Navigate to="/login" replace />} />}>
