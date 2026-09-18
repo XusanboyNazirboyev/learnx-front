@@ -2,7 +2,8 @@ import type { User } from "./types";
 
 const apiBaseUrl = (
     import.meta.env.VITE_API_BASE_URL ||
-    import.meta.env.VITE_API_URL 
+    import.meta.env.VITE_API_URL ||
+    "http://localhost:3000/api"
 ).replace(/\/$/, "");
 
 type ApiError = Error & { status?: number; data?: unknown };
