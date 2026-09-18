@@ -27,6 +27,9 @@ const Notifications = lazy(() => import('@/pages/Notification'));
 const Library = lazy(() => import('@/pages/Library'));
 const Exams = lazy(() => import('@/pages/Exams'));
 const SettingsPage = lazy(() => import('@/pages/Settings'));
+const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
+const ChangePassword = lazy(() => import('@/pages/ChangePassword'));
 
 // Add page imports here
 
@@ -53,8 +56,11 @@ const AuthenticatedApp = () => {
     <Suspense fallback={<div className="fixed inset-0 flex items-center justify-center"><div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" /></div>}>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
           <Route path="/" element={<Navigate to="/admin" replace />} />
+          <Route path="/change-password" element={<ChangePassword />} />
           <Route element={<ProtectedRoute allowedRoles={['SUPERADMIN', 'ADMIN']} unauthenticatedElement={<Navigate to="/login" replace />} />}>
             <Route element={<DashboardLayout role="ADMIN" />}>
               <Route path="/admin" element={<AdminDashboard />} />
