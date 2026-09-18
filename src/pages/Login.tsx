@@ -19,7 +19,12 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      const { user } = await apiClient.login(identifier, password);
+      const { user, mustChangePassword } = await apiClient.login(identifier, password);
+      if (mustChangePassword) {
+        sessionStorage.setItem("pendingChangePassword", "1");
+        window.location.href = "/change-password";
+        return;
+      }
       const roleDashboard = user.role === "STUDENT"
         ? "/student"
         : user.role === "TEACHER"
@@ -134,6 +139,7 @@ export default function Login() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password" className="text-sm font-medium">Parol</Label>
+                <a href="/forgot-password" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Parolni unutdingizmi?</a>
               </div>
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-muted-foreground" />
