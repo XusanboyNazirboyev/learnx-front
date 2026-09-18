@@ -160,20 +160,29 @@ function QuickStat({ icon: Icon, label, value, accent }) {
   );
 }
 
-export function StatusBadge({ status }) {
-  const map = {
-    ACTIVE: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-    INACTIVE: "bg-muted text-muted-foreground",
-    FREEZE: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-    GRADUATED: "bg-accent/10 text-accent",
-    PLANNED: "bg-muted text-muted-foreground",
-    PENDING: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-    PAID: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-    REFUNDED: "bg-red-500/10 text-red-600 dark:text-red-400",
-    NEEDS_REVISION: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-    REJECTED: "bg-red-500/10 text-red-600 dark:text-red-400",
-    ACCEPTED: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+export function StatusBadge({ status }: { status: string }) {
+  const config: Record<string, { dot: string; bg: string; text: string; label: string }> = {
+    ACTIVE:         { dot: "bg-emerald-500",              bg: "bg-emerald-500/10",   text: "text-emerald-600 dark:text-emerald-400",  label: "Faol" },
+    INACTIVE:       { dot: "bg-slate-400",                bg: "bg-muted",            text: "text-muted-foreground",                   label: "Nofaol" },
+    FREEZE:         { dot: "bg-amber-500",                bg: "bg-amber-500/10",     text: "text-amber-600 dark:text-amber-400",      label: "Muzlatilgan" },
+    GRADUATED:      { dot: "bg-accent",                   bg: "bg-accent/10",        text: "text-accent",                             label: "Bitirgan" },
+    PLANNED:        { dot: "bg-slate-400",                bg: "bg-muted",            text: "text-muted-foreground",                   label: "Rejalashtirilgan" },
+    COMPLETED:      { dot: "bg-violet-500",               bg: "bg-violet-500/10",    text: "text-violet-600 dark:text-violet-400",    label: "Tugatilgan" },
+    CANCELLED:      { dot: "bg-red-400",                  bg: "bg-red-500/10",       text: "text-red-600 dark:text-red-400",          label: "Bekor qilingan" },
+    PENDING:        { dot: "bg-amber-500",                bg: "bg-amber-500/10",     text: "text-amber-600 dark:text-amber-400",      label: "Kutilmoqda" },
+    PAID:           { dot: "bg-emerald-500",              bg: "bg-emerald-500/10",   text: "text-emerald-600 dark:text-emerald-400",  label: "To'langan" },
+    REFUNDED:       { dot: "bg-red-400",                  bg: "bg-red-500/10",       text: "text-red-600 dark:text-red-400",          label: "Qaytarilgan" },
+    NEEDS_REVISION: { dot: "bg-amber-500",                bg: "bg-amber-500/10",     text: "text-amber-600 dark:text-amber-400",      label: "Tahrir kerak" },
+    REJECTED:       { dot: "bg-red-400",                  bg: "bg-red-500/10",       text: "text-red-600 dark:text-red-400",          label: "Rad etilgan" },
+    ACCEPTED:       { dot: "bg-emerald-500",              bg: "bg-emerald-500/10",   text: "text-emerald-600 dark:text-emerald-400",  label: "Qabul qilingan" },
   };
-  const label = { ACTIVE: "Faol", INACTIVE: "Nofaol", FREEZE: "Muzlatilgan", GRADUATED: "Bitirgan", PLANNED: "Rejada", PENDING: "Kutilmoqda", PAID: "To'langan", REFUNDED: "Qaytarilgan", NEEDS_REVISION: "Tahrir kerak", REJECTED: "Rad etilgan", ACCEPTED: "Qabul qilingan" };
-  return <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${map[status] || map.ACTIVE}`}>{label[status] || status}</span>;
+
+  const c = config[status] ?? config.INACTIVE;
+
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold ${c.bg} ${c.text}`}>
+      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${c.dot}`} />
+      {c.label}
+    </span>
+  );
 }

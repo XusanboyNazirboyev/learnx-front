@@ -1,16 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { MoreHorizontal } from "lucide-react";
-import PageHeader from "@/components/ui/PageHeader";
+import { Phone, Briefcase, Users2, DollarSign } from "lucide-react";
+import PageHeader, { type FilterOption } from "@/components/ui/PageHeader";
+import EntityCard, { type StatusOption as CardStatusOption } from "@/components/ui/EntityCard";
 import { StatusBadge } from "@/pages/admin/AdminDashboard";
-import { apiClient } from "@/api/apiClient";
+import { teachersApi } from "@/api/services/teachersApi";
 import AdminFormDrawer from "@/components/admin/AdminFormDrawer";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import TablePagination from "@/components/ui/TablePagination";
+import type { User } from "@/api/types";
 
-type Teacher = {
-  id: number;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  status: string;
+type Teacher = User & {
   teacherProfile?: {
     specialty?: string | null;
     salaryType?: string;
@@ -19,52 +24,292 @@ type Teacher = {
   };
 };
 
-const formatMoney = (value: number | string) => `${Number(value).toLocaleString("uz-UZ")} so'm`;
-const salaryLabel: Record<string, string> = { FIXED: "Belgilangan", PERCENTAGE: "Foiz", HOURLY: "Soatlik" };
+const TEACHER_FILTER_OPTIONS: FilterOption[] = [
+  { label: "Faol", value: "ACTIVE" },
+  { label: "Nofaol", value: "INACTIVE" },
+];
+
+const TEACHER_STATUS_ACTIONS: CardStatusOption[] = [
+  { value: "ACTIVE", label: "Faol", dot: "bg-emerald-500" },
+  { value: "INACTIVE", label: "Nofaol", dot: "bg-slate-400" },
+];
+
+const formatMoney = (v: number | string) => `${Number(v).toLocaleString("uz-UZ")} so'm`;
+const SALARY_LABEL: Record<string, string> = {
+  FIXED: "Belgilangan",
+  PERCENTAGE: "Foiz",
+  HOURLY: "Soatlik",
+};
+
+const formatDate = (d?: string | null) => {
+  if (!d) return "—";
+  const dt = new Date(d);
+  return `${String(dt.getDate()).padStart(2, "0")}.${String(dt.getMonth() + 1).padStart(2, "0")}.${dt.getFullYear()}`;
+};
 
 export default function Teachers() {
   const [open, setOpen] = useState(false);
+  const [editTeacher, setEditTeacher] = useState<Teacher | null>(null);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    apiClient.request<{ items: Teacher[] }>("/teachers?limit=100")
-      .then((response) => setTeachers(response.items))
-      .catch((requestError) => setError(requestError.message || "O'qituvchilarni yuklashda xatolik"))
+  const [statusFilter, setStatusFilter] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+
+  // View modal
+  const [viewId, setViewId] = useState<number | null>(null);
+  const [viewTeacher, setViewTeacher] = useState<Teacher | null>(null);
+  const [viewLoading, setViewLoading] = useState(false);
+
+  const fetchTeachers = () => {
+    setLoading(true);
+    teachersApi
+      .list({ page, limit, status: statusFilter || undefined })
+      .then((res) => {
+        setTeachers(res.items as Teacher[]);
+        if (res.meta) { setTotal(res.meta.total); setTotalPages(res.meta.totalPages); }
+      })
+      .catch((err) => setError(err.message || "O'qituvchilarni yuklashda xatolik"))
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(fetchTeachers, [page, limit, statusFilter]);
+
+  useEffect(() => {
+    if (!viewId) return;
+    setViewLoading(true);
+    setViewTeacher(null);
+    teachersApi.get(viewId)
+      .then((res) => setViewTeacher(res as Teacher))
+      .catch(() => {})
+      .finally(() => setViewLoading(false));
+  }, [viewId]);
+
+  const addTeacher = async (values: Record<string, string>) => {
+    setError("");
+    if (editTeacher) {
+      await teachersApi.update(editTeacher.id, {
+        firstName: values.firstName?.trim(),
+        lastName: values.lastName?.trim(),
+        phone: values.phone?.trim(),
+        email: values.email?.trim() || undefined,
+        address: values.address?.trim() || undefined,
+      });
+      fetchTeachers();
+      setEditTeacher(null);
+      return;
+    }
+    const res = await teachersApi.create({
+      firstName: values.firstName.trim(),
+      lastName: values.lastName.trim(),
+      phone: values.phone.trim(),
+      password: values.password,
+      email: values.email?.trim() || undefined,
+      address: values.address?.trim() || undefined,
+      photo: values.photo || undefined,
+      groupIds: values.groupIds
+        ? values.groupIds.split(",").filter(Boolean)
+        : undefined,
+    });
+    setTeachers((prev) => [res.user as Teacher, ...prev]);
+  };
+
+  const updateStatus = (teacher: Teacher, status: string) => {
+    teachersApi
+      .update(teacher.id, { status })
+      .then(() => setTeachers((prev) => prev.map((t) => t.id === teacher.id ? { ...t, status } : t)))
+      .catch((err) => setError(err.message || "Statusni yangilashda xatolik"));
+  };
+
+  const deleteTeacher = (teacher: Teacher) => {
+    teachersApi
+      .remove(teacher.id)
+      .then(fetchTeachers)
+      .catch((err) => setError(err.message || "O'qituvchini o'chirishda xatolik"));
+  };
 
   return (
     <div>
-      <PageHeader title="O'qituvchilar" subtitle={`${teachers.length} ta o'qituvchi`} actionLabel="Yangi o'qituvchi" onAction={() => setOpen(true)} />
+      <PageHeader
+        title="O'qituvchilar"
+        subtitle={`${total || teachers.length} ta o'qituvchi`}
+        actionLabel="Yangi o'qituvchi"
+        onAction={() => setOpen(true)}
+        filterOptions={TEACHER_FILTER_OPTIONS}
+        filterValue={statusFilter}
+        onFilterChange={(val) => { setStatusFilter(val); setPage(1); }}
+      />
+
       {loading && <p className="mb-4 text-sm text-muted-foreground">Yuklanmoqda...</p>}
       {error && <p className="mb-4 text-sm text-destructive">{error}</p>}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {teachers.map((teacher) => {
           const profile = teacher.teacherProfile;
           const salaryType = profile?.salaryType || "FIXED";
           const salary = profile?.salaryAmount || 0;
+          const groups = profile?._count?.groupTeachers || 0;
+          const initials = `${teacher.firstName?.[0] || ""}${teacher.lastName?.[0] || ""}`.toUpperCase();
           return (
-            <div key={teacher.id} className="bg-card rounded-2xl border border-border p-5 hover:shadow-lg hover:shadow-foreground/5 transition-all">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl navy-gradient flex items-center justify-center text-white font-semibold">{teacher.firstName?.[0]}{teacher.lastName?.[0]}</div>
-                  <div><p className="font-heading font-bold">{teacher.firstName} {teacher.lastName}</p><p className="text-sm text-muted-foreground">{profile?.specialty || "—"}</p></div>
-                </div>
-                <button className="p-1.5 rounded-lg hover:bg-muted"><MoreHorizontal className="w-4 h-4 text-muted-foreground" /></button>
-              </div>
-              <div className="grid grid-cols-3 gap-2 mt-5 pt-4 border-t border-border text-center">
-                <div><p className="text-xs text-muted-foreground">Guruhlar</p><p className="font-heading font-bold mt-0.5">{profile?._count?.groupTeachers || 0}</p></div>
-                <div><p className="text-xs text-muted-foreground">Maosh turi</p><p className="font-semibold text-xs mt-1">{salaryLabel[salaryType] || salaryType}</p></div>
-                <div><p className="text-xs text-muted-foreground">Maosh</p><p className="font-heading font-bold mt-0.5 text-sm">{salaryType === "PERCENTAGE" ? `${salary}%` : formatMoney(salary)}</p></div>
-              </div>
-              <div className="flex items-center justify-between mt-4"><span className="text-xs text-muted-foreground">{teacher.phone}</span><StatusBadge status={teacher.status} /></div>
-            </div>
+            <EntityCard
+              key={teacher.id}
+              avatar={teacher.photo as string | undefined}
+              avatarInitials={initials}
+              avatarClass="navy-gradient text-white"
+              title={`${teacher.firstName} ${teacher.lastName}`}
+              subtitle={profile?.specialty || "O'qituvchi"}
+              statusBadge={<StatusBadge status={teacher.status} />}
+              details={[
+                {
+                  icon: <Phone className="w-3.5 h-3.5" />,
+                  label: "Telefon",
+                  value: teacher.phone,
+                },
+                {
+                  icon: <Users2 className="w-3.5 h-3.5" />,
+                  label: "Guruhlar",
+                  value: `${groups} ta`,
+                },
+                {
+                  icon: <DollarSign className="w-3.5 h-3.5" />,
+                  label: "Maosh",
+                  value: salaryType === "PERCENTAGE"
+                    ? `${salary}%`
+                    : formatMoney(salary),
+                },
+              ]}
+              statusOptions={TEACHER_STATUS_ACTIONS}
+              currentStatus={teacher.status}
+              onView={() => setViewId(teacher.id)}
+              onEdit={() => { setEditTeacher(teacher); setOpen(true); }}
+              onStatusChange={(s) => updateStatus(teacher, s)}
+              onDelete={() => deleteTeacher(teacher)}
+              deleteTitle={`"${teacher.firstName} ${teacher.lastName}" ni o'chirish`}
+              deleteDescription="Ushbu o'qituvchini o'chirishni tasdiqlaysizmi? Bu amalni qaytarib bo'lmaydi."
+            />
           );
         })}
       </div>
-      <AdminFormDrawer kind="teacher" open={open} onOpenChange={setOpen} />
+
+      {!loading && teachers.length === 0 && (
+        <p className="py-12 text-center text-sm text-muted-foreground">
+          Hech qanday o'qituvchi topilmadi.
+        </p>
+      )}
+
+      <TablePagination
+        page={page} totalPages={totalPages} total={total} limit={limit}
+        onPageChange={setPage}
+        onLimitChange={(l) => { setLimit(l); setPage(1); }}
+      />
+
+      <AdminFormDrawer
+        kind="teacher"
+        open={open}
+        onOpenChange={(o) => { setOpen(o); if (!o) setEditTeacher(null); }}
+        onSubmit={addTeacher}
+        initialValues={editTeacher ? {
+          firstName: editTeacher.firstName,
+          lastName: editTeacher.lastName,
+          phone: editTeacher.phone,
+          email: editTeacher.email || "",
+          address: (editTeacher as any).address || "",
+          photo: (editTeacher as any).photo || "",
+        } : undefined}
+      />
+
+      {/* View Modal */}
+      <Dialog
+        open={viewId !== null}
+        onOpenChange={(o) => { if (!o) { setViewId(null); setViewTeacher(null); } }}
+      >
+        <DialogContent className="sm:max-w-[460px] p-0 overflow-hidden rounded-2xl border border-border bg-card">
+          <DialogHeader className="px-6 pt-5 pb-4 border-b border-border">
+            <DialogTitle className="font-heading text-lg font-bold">
+              Umumiy ma'lumot
+            </DialogTitle>
+          </DialogHeader>
+
+          {viewLoading && (
+            <div className="p-8 text-center text-sm text-muted-foreground">Yuklanmoqda...</div>
+          )}
+
+          {viewTeacher && (
+            <div className="p-6 space-y-5">
+              {/* Avatar + name + status */}
+              <div className="flex items-center gap-4">
+                {viewTeacher.photo ? (
+                  <img src={viewTeacher.photo as string} alt={viewTeacher.firstName} className="w-14 h-14 rounded-xl object-cover" />
+                ) : (
+                  <div className="w-14 h-14 rounded-xl navy-gradient flex items-center justify-center text-white font-bold text-xl">
+                    {`${viewTeacher.firstName?.[0] || ""}${viewTeacher.lastName?.[0] || ""}`.toUpperCase()}
+                  </div>
+                )}
+                <div className="flex-1">
+                  <h3 className="font-heading font-bold text-xl">
+                    {viewTeacher.firstName} {viewTeacher.lastName}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    {(viewTeacher.teacherProfile as any)?.specialty || "O'qituvchi"}
+                  </p>
+                </div>
+                <StatusBadge status={viewTeacher.status} />
+              </div>
+
+              <div className="space-y-3 text-sm">
+                {[
+                  { label: "Telefon", value: viewTeacher.phone || "—" },
+                  { label: "Elektron pochta", value: viewTeacher.email || "—" },
+                  {
+                    label: "Mutaxassislik",
+                    value: (viewTeacher.teacherProfile as any)?.specialty || "—",
+                  },
+                  {
+                    label: "Guruhlar soni",
+                    value: `${(viewTeacher.teacherProfile as any)?._count?.groupTeachers || 0} ta`,
+                  },
+                  {
+                    label: "Maosh turi",
+                    value: SALARY_LABEL[(viewTeacher.teacherProfile as any)?.salaryType || "FIXED"],
+                  },
+                  {
+                    label: "Maosh",
+                    value: (viewTeacher.teacherProfile as any)?.salaryType === "PERCENTAGE"
+                      ? `${(viewTeacher.teacherProfile as any)?.salaryAmount || 0}%`
+                      : formatMoney((viewTeacher.teacherProfile as any)?.salaryAmount || 0),
+                  },
+                ].map((row) => (
+                  <div key={row.label} className="flex items-center justify-between">
+                    <span className="text-muted-foreground">{row.label}</span>
+                    <span className="font-medium text-foreground">{row.value}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-border">
+                <Button variant="outline" className="rounded-xl px-5 h-10" onClick={() => { setViewId(null); setViewTeacher(null); }}>
+                  Yopish
+                </Button>
+                <Button
+                  className="rounded-xl px-5 h-10 navy-gradient text-white hover:opacity-90 shadow-sm shadow-primary/20"
+                  onClick={() => {
+                    const t = viewTeacher;
+                    setViewId(null); setViewTeacher(null);
+                    if (t) setEditTeacher(t);
+                    setOpen(true);
+                  }}
+                >
+                  O'zgartirish
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

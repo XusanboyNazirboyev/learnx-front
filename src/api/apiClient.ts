@@ -2,13 +2,12 @@ import type { User } from "./types";
 
 const apiBaseUrl = (
     import.meta.env.VITE_API_BASE_URL ||
-    import.meta.env.VITE_API_URL ||
-    "http://localhost:4000/api"
+    import.meta.env.VITE_API_URL 
 ).replace(/\/$/, "");
 
 type ApiError = Error & { status?: number; data?: unknown };
 
-const isRefreshing = { current: false };
+let refreshPromise: Promise<boolean> | null = null;
 const onUnauthorized: Array<() => void> = [];
 
 export const setUnauthorizedHandler = (fn: () => void) => {
@@ -69,25 +68,27 @@ const clearTokens = () => {
 };
 
 const refreshTokens = async (): Promise<boolean> => {
-    if (isRefreshing.current) return false;
-    isRefreshing.current = true;
-    try {
-        const refreshToken = localStorage.getItem("refreshToken");
-        if (!refreshToken) return false;
-        const data = await rawRequest<{
-            tokens: { accessToken: string; refreshToken: string };
-        }>("/auth/refresh", {
-            method: "POST",
-            body: JSON.stringify({ refreshToken }),
-        });
-        localStorage.setItem("accessToken", data.tokens.accessToken);
-        localStorage.setItem("refreshToken", data.tokens.refreshToken);
-        return true;
-    } catch {
-        return false;
-    } finally {
-        isRefreshing.current = false;
-    }
+    if (refreshPromise) return refreshPromise;
+    refreshPromise = (async () => {
+        try {
+            const refreshToken = localStorage.getItem("refreshToken");
+            if (!refreshToken) return false;
+            const data = await rawRequest<{
+                tokens: { accessToken: string; refreshToken: string };
+            }>("/auth/refresh", {
+                method: "POST",
+                body: JSON.stringify({ refreshToken }),
+            });
+            localStorage.setItem("accessToken", data.tokens.accessToken);
+            localStorage.setItem("refreshToken", data.tokens.refreshToken);
+            return true;
+        } catch {
+            return false;
+        } finally {
+            refreshPromise = null;
+        }
+    })();
+    return refreshPromise;
 };
 
 const request = async <T>(

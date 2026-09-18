@@ -202,63 +202,6 @@ export const teachers = [
     },
 ];
 
-export const courses = [
-    {
-        id: 1,
-        name: "Frontend Development",
-        price: 2500000,
-        durationMonth: 6,
-        durationHours: 3,
-        status: "ACTIVE",
-        students: 412,
-    },
-    {
-        id: 2,
-        name: "Backend (Node.js)",
-        price: 2800000,
-        durationMonth: 7,
-        durationHours: 3,
-        status: "ACTIVE",
-        students: 308,
-    },
-    {
-        id: 3,
-        name: "Mobile (Flutter)",
-        price: 3000000,
-        durationMonth: 8,
-        durationHours: 3,
-        status: "ACTIVE",
-        students: 231,
-    },
-    {
-        id: 4,
-        name: "UI/UX Dizayn",
-        price: 2200000,
-        durationMonth: 5,
-        durationHours: 2,
-        status: "ACTIVE",
-        students: 179,
-    },
-    {
-        id: 5,
-        name: "DevOps",
-        price: 3500000,
-        durationMonth: 6,
-        durationHours: 3,
-        status: "INACTIVE",
-        students: 96,
-    },
-    {
-        id: 6,
-        name: "Python Data Science",
-        price: 3200000,
-        durationMonth: 9,
-        durationHours: 3,
-        status: "ACTIVE",
-        students: 154,
-    },
-];
-
 export const groups = [
     {
         id: 1,

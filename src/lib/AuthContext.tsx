@@ -16,7 +16,15 @@ interface AuthContextValue {
   checkUserAuth: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+// Vite hot-reload paytida provider va consumer turli modul nusxalarini ushlab
+// qolishi mumkin. Contextni global registryda saqlash ularning bitta instansdan
+// foydalanishini kafolatlaydi.
+const authContextRegistryKey = "__eduflow_auth_context__";
+const authContextRegistry = globalThis as typeof globalThis & {
+  [authContextRegistryKey]?: ReturnType<typeof createContext<AuthContextValue | undefined>>;
+};
+const AuthContext = authContextRegistry[authContextRegistryKey] ?? createContext<AuthContextValue | undefined>(undefined);
+authContextRegistry[authContextRegistryKey] = AuthContext;
 
 const errorMessage = (error: unknown, fallback: string) =>
   error instanceof Error ? error.message : fallback;

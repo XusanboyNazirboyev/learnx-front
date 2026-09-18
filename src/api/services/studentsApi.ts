@@ -1,6 +1,25 @@
 import { apiClient } from "../apiClient";
 import type { PaginationQuery, Paginated, User } from "../types";
 
+export type CreateStudentInput = {
+    firstName: string;
+    lastName: string;
+    phone: string;
+    email?: string;
+    birthDate?: string;
+    parentPhone?: string;
+    address?: string;
+    photo?: string;
+    /** Bir nechta guruh ID lari */
+    groupIds?: string[];
+    password?: string;
+};
+
+export type CreatedStudent = {
+    user: User;
+    credentials: { login: string; password: string };
+};
+
 export const studentsApi = {
     list(query: PaginationQuery = {}) {
         return apiClient.request<Paginated<User>>(
@@ -9,6 +28,21 @@ export const studentsApi = {
     },
     get(id: number) {
         return apiClient.request<User>(`/students/${id}`);
+    },
+    create(input: CreateStudentInput) {
+        return apiClient.request<CreatedStudent>("/students", {
+            method: "POST",
+            body: JSON.stringify(input),
+        });
+    },
+    update(id: number, data: Partial<{ firstName: string; lastName: string; phone: string; email: string; address: string; status: string }>) {
+        return apiClient.request<User>(`/students/${id}`, {
+            method: "PATCH",
+            body: JSON.stringify(data),
+        });
+    },
+    remove(id: number) {
+        return apiClient.request<void>(`/students/${id}`, { method: "DELETE" });
     },
     addToGroup(studentId: number, groupId: number) {
         return apiClient.request(`/students/${studentId}/groups/${groupId}`, {
