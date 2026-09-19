@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/lib/AuthContext";
-import {
+import { ShieldCheck,
   GraduationCap, LayoutDashboard, Users, UserCog, BookOpen, Users2, CreditCard,
   CalendarDays, ClipboardCheck, FileBarChart, DoorOpen, Settings, LogOut,
   User, Bell, BookMarked, FileCheck2, HelpCircle,
@@ -13,6 +13,7 @@ const adminNav = [
   { label: "Dashboard", path: "/admin", icon: LayoutDashboard },
   { label: "Talabalar", path: "/admin/students", icon: Users },
   { label: "O'qituvchilar", path: "/admin/teachers", icon: UserCog },
+  { label: "Adminlar", path: "/admin/admins", icon: ShieldCheck },
   { label: "Kurslar", path: "/admin/courses", icon: BookOpen },
   { label: "Guruhlar", path: "/admin/groups", icon: Users2 },
   { label: "To'lovlar", path: "/admin/payments", icon: CreditCard },
