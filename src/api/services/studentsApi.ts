@@ -21,6 +21,9 @@ export type CreatedStudent = {
 };
 
 export const studentsApi = {
+    my() {
+        return apiClient.request("/students/my");
+    },
     list(query: PaginationQuery = {}) {
         return apiClient.request<Paginated<User>>(
             `/students${apiClient.buildQuery(query)}`,
