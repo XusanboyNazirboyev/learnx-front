@@ -31,6 +31,12 @@ const SettingsPage = lazy(() => import('@/pages/Settings'));
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
 const ChangePassword = lazy(() => import('@/pages/ChangePassword'));
+const MyGroups = lazy(() => import('@/pages/shared/MyGroups'));
+const GroupDetail = lazy(() => import('@/pages/shared/GroupDetail'));
+const Homeworks = lazy(() => import('@/pages/shared/Homeworks'));
+const TeacherLessons = lazy(() => import('@/pages/teacher/Lessons'));
+const StudentSchedule = lazy(() => import('@/pages/student/Schedule'));
+const StudentPayments = lazy(() => import('@/pages/student/Payments'));
 
 // Add page imports here
 
@@ -78,12 +84,21 @@ const AuthenticatedApp = () => {
           <Route element={<ProtectedRoute allowedRoles={['TEACHER']} unauthenticatedElement={<Navigate to="/login" replace />} />}>
             <Route element={<DashboardLayout role="TEACHER" />}>
               <Route path="/teacher" element={<TeacherDashboard />} />
+              <Route path="/teacher/groups" element={<MyGroups />} />
+              <Route path="/teacher/groups/:id" element={<GroupDetail />} />
+              <Route path="/teacher/lessons" element={<TeacherLessons />} />
+              <Route path="/teacher/homework" element={<Homeworks />} />
               <Route path="/teacher/attendance" element={<Attendance />} />
             </Route>
           </Route>
           <Route element={<ProtectedRoute allowedRoles={['STUDENT']} unauthenticatedElement={<Navigate to="/login" replace />} />}>
             <Route element={<DashboardLayout role="STUDENT" />}>
               <Route path="/student" element={<StudentDashboard />} />
+              <Route path="/student/groups" element={<MyGroups />} />
+              <Route path="/student/groups/:id" element={<GroupDetail />} />
+              <Route path="/student/schedule" element={<StudentSchedule />} />
+              <Route path="/student/homework" element={<Homeworks />} />
+              <Route path="/student/payments" element={<StudentPayments />} />
             </Route>
           </Route>
           <Route element={<ProtectedRoute allowedRoles={['SUPERADMIN', 'ADMIN', 'TEACHER', 'STUDENT']} unauthenticatedElement={<Navigate to="/login" replace />} />}>
