@@ -48,7 +48,7 @@ export default function MyGroups() {
     if (isTeacher) {
       if (teacherProfileId == null) return;
       setLoading(true);
-      const q = { teacherId: teacherProfileId, status: tab, limit: 200 } as PaginationQuery;
+      const q = { teacherId: teacherProfileId, status: tab, limit: 100 } as PaginationQuery;
       groupsApi.list(q)
         .then((res) => setGroups(res.items as GroupRow[]))
         .catch((err) => setError(err.message || "Guruhlarni yuklashda xatolik"))

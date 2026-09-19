@@ -40,11 +40,11 @@ export default function Lessons() {
     profileApi.me()
       .then(async (me) => {
         const tid = (me as unknown as { teacherProfile?: { id?: number } }).teacherProfile?.id;
-        const q = { teacherId: tid, limit: 200 } as PaginationQuery;
+        const q = { teacherId: tid, limit: 100 } as PaginationQuery;
         const gRes = await groupsApi.list(q);
         const groups = (gRes.items as Array<{ id: number; name: string }>) || [];
         const nested = await Promise.all(
-          groups.map((g) => lessonsApi.list({ groupId: g.id, limit: 200 }).then((res) => (res.items as LessonRow[]) || [])),
+          groups.map((g) => lessonsApi.list({ groupId: g.id, limit: 100 }).then((res) => (res.items as LessonRow[]) || [])),
         );
         return nested.flat();
       })

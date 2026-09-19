@@ -38,7 +38,7 @@ export default function GroupDetail() {
     Promise.all([
       groupsApi.get(groupId),
       homeworkApi.list(groupId),
-      lessonsApi.list({ groupId, limit: 200 }),
+      lessonsApi.list({ groupId, limit: 100 }),
       isStudent ? homeworkApi.mySubmissions() : Promise.resolve([]),
     ])
       .then((results) => {

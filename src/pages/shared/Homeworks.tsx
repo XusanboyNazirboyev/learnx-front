@@ -40,7 +40,7 @@ export default function Homeworks() {
         })
       : profileApi.me().then(async (me) => {
           const tid = (me as unknown as { teacherProfile?: { id?: number } }).teacherProfile?.id;
-          const q = { teacherId: tid, limit: 200 } as PaginationQuery;
+          const q = { teacherId: tid, limit: 100 } as PaginationQuery;
           const res = await groupsApi.list(q);
           return (res.items as Array<{ id: number; name: string }>).map((g) => ({ id: g.id, name: g.name }));
         });

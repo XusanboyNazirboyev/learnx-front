@@ -36,7 +36,7 @@ export default function Schedule() {
         const p = res as { studentGroups?: Array<{ group: { id: number; name: string } }> };
         const groups = (p.studentGroups || []).map((sg) => sg.group);
         const nested = await Promise.all(
-          groups.map((g) => lessonsApi.list({ groupId: g.id, limit: 200 }).then((r) => (r.items as LessonRow[]) || [])),
+          groups.map((g) => lessonsApi.list({ groupId: g.id, limit: 100 }).then((r) => (r.items as LessonRow[]) || [])),
         );
         return nested.flat();
       })
