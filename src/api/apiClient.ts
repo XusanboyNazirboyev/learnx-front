@@ -186,4 +186,32 @@ export const apiClient = {
         }
         return data as User;
     },
+    // Admin talaba/o'qituvchi yaratayotganda yoki tahrirlayotganda rasm tanlasa,
+    // shu orqali yuklanadi — hech kimning User yozuviga bog'lanmaydi, faqat URL qaytadi.
+    async uploadGenericPhoto(file: File): Promise<{ url: string }> {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const headers = new Headers();
+        const token = localStorage.getItem("accessToken");
+        if (token) headers.set("Authorization", `Bearer ${token}`);
+
+        const response = await fetch(`${apiBaseUrl}/uploads/photo`, {
+            method: "POST",
+            headers,
+            body: formData,
+            credentials: "include",
+        });
+        const data = await response.json().catch(() => null);
+
+        if (!response.ok) {
+            const error = new Error(
+                typeof data?.message === "string" ? data.message : "Rasm yuklanmadi",
+            ) as ApiError;
+            error.status = response.status;
+            error.data = data;
+            throw error;
+        }
+        return data as { url: string };
+    },
 };

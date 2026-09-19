@@ -489,19 +489,46 @@ function ImageField({
   values: Record<string, string>;
   update: (name: string, value: string) => void;
 }) {
-  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+
+  const onChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => update("photo", String(reader.result));
-    reader.readAsDataURL(file);
+
+    setUploadError("");
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setUploadError("Faqat JPEG, PNG yoki WEBP formatidagi rasm yuklash mumkin.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError("Rasm hajmi 5 MB dan oshmasligi kerak.");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const { url } = await apiClient.uploadGenericPhoto(file);
+      update("photo", url);
+    } catch (err) {
+      setUploadError(
+        (err as { data?: { message?: string } })?.data?.message ||
+        "Rasm yuklashda xatolik yuz berdi. Qayta urinib ko'ring.",
+      );
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
     <div className="space-y-2">
       <Label>Rasm (ixtiyoriy)</Label>
       <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-border px-4 py-3 text-sm hover:bg-muted/40">
-        {values.photo ? (
+        {uploading ? (
+          <span className="text-xs text-muted-foreground">Yuklanmoqda...</span>
+        ) : values.photo ? (
           <>
             <img src={values.photo} alt="Tanlangan rasm" className="h-12 w-12 rounded-lg object-cover" />
             <button
@@ -515,11 +542,12 @@ function ImageField({
         ) : (
           <>
             <span className="font-medium text-primary">Rasm yuklash</span>
-            <span className="text-xs text-muted-foreground">JPG yoki PNG</span>
+            <span className="text-xs text-muted-foreground">JPG, PNG yoki WEBP</span>
           </>
         )}
-        <input type="file" accept="image/png,image/jpeg,image/webp" onChange={onChange} className="sr-only" />
+        <input type="file" accept="image/png,image/jpeg,image/webp" onChange={onChange} disabled={uploading} className="sr-only" />
       </label>
+      {uploadError && <p className="text-xs text-destructive">{uploadError}</p>}
     </div>
   );
 }

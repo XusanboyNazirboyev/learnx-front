@@ -107,6 +107,9 @@ export default function Students() {
         phone: values.phone?.trim(),
         email: values.email?.trim() || undefined,
         address: values.address?.trim() || undefined,
+        photo: values.photo || undefined,
+        birthDate: values.birthDate || undefined,
+        parentPhone: values.parentPhone?.trim() || undefined,
       });
       fetchStudents();
       setEditStudent(null);
