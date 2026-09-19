@@ -2,6 +2,9 @@ import { apiClient } from "../apiClient";
 import type { Paginated, Payment, PaginationQuery } from "../types";
 
 export const paymentsApi = {
+    my() {
+        return apiClient.request<{ items: Array<{ id: number; amount: number | string; method: string; status?: string; paidAt?: string | null }>; balance: number | string }>("/payments/my");
+    },
     list(
         query: PaginationQuery & {
             studentId?: number;
