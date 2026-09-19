@@ -35,11 +35,15 @@ type Student = {
 const STUDENT_FILTER_OPTIONS: FilterOption[] = [
   { label: "Faol", value: "ACTIVE" },
   { label: "Nofaol", value: "INACTIVE" },
+  { label: "Muzlatilgan", value: "FREEZE" },
+  { label: "Bitirgan", value: "GRADUATED" },
 ];
 
 const STUDENT_STATUS_ACTIONS: CardStatusOption[] = [
   { value: "ACTIVE", label: "Faol", dot: "bg-emerald-500" },
   { value: "INACTIVE", label: "Nofaol", dot: "bg-slate-400" },
+  { value: "FREEZE", label: "Muzlatilgan", dot: "bg-amber-500" },
+  { value: "GRADUATED", label: "Bitirgan", dot: "bg-accent" },
 ];
 
 const formatMoney = (v: number | string) =>
