@@ -31,6 +31,7 @@ const teacherNav = [
 
 const studentNav = [
   { label: "Dashboard", path: "/student", icon: LayoutDashboard },
+  { label: "Guruhlarim", path: "/student/groups", icon: Users2 },
   { label: "Dars jadvali", path: "/student/schedule", icon: CalendarDays },
   { label: "Uy vazifalari", path: "/student/homework", icon: BookOpen },
   { label: "To'lovlar", path: "/student/payments", icon: CreditCard },
