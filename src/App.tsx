@@ -14,6 +14,7 @@ const HelpCenter = lazy(() => import('@/pages/HelpCenter'));
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'));
 const Students = lazy(() => import('@/pages/admin/Students'));
 const Teachers = lazy(() => import('@/pages/admin/Teachers'));
+const Admins = lazy(() => import('@/pages/admin/Admins'));
 const Courses = lazy(() => import('@/pages/admin/Courses'));
 const Groups = lazy(() => import('@/pages/admin/Groups'));
 const Payments = lazy(() => import('@/pages/admin/Payments'));
@@ -66,6 +67,7 @@ const AuthenticatedApp = () => {
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/students" element={<Students />} />
               <Route path="/admin/teachers" element={<Teachers />} />
+              <Route path="/admin/admins" element={<Admins />} />
               <Route path="/admin/courses" element={<Courses />} />
               <Route path="/admin/groups" element={<Groups />} />
               <Route path="/admin/payments" element={<Payments />} />
