@@ -63,9 +63,13 @@ export default function Topbar({ title, subtitle, role = "ADMIN", onMenuClick })
             onClick={() => setOpen(!open)}
             className="flex items-center gap-2.5 pl-1 pr-2 py-1 rounded-xl hover:bg-muted transition-colors"
           >
-            <div className="w-9 h-9 rounded-lg navy-gradient flex items-center justify-center text-white text-sm font-semibold">
-              {initials}
-            </div>
+            {user?.photo ? (
+              <img src={user.photo} alt={fullName} className="w-9 h-9 rounded-lg object-cover" />
+            ) : (
+              <div className="w-9 h-9 rounded-lg navy-gradient flex items-center justify-center text-white text-sm font-semibold">
+                {initials}
+              </div>
+            )}
             <div className="hidden sm:block text-left">
               <p className="text-sm font-semibold leading-none">{shortName || fullName}</p>
               <p className="text-[11px] text-muted-foreground mt-0.5">{roleLabel}</p>

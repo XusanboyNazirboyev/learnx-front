@@ -74,18 +74,45 @@ export default function Profile() {
     }
   };
 
-  const saveProfile = (e) => {
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
+  const saveProfile = async (e) => {
     e.preventDefault();
-    setSaved(true);
+    setSaveError("");
+    setSaving(true);
+    try {
+      await profileApi.updateMe(form);
+      await checkUserAuth(); // header/profil holatini yangi ma'lumot bilan yangilash
+      setSaved(true);
+    } catch (err) {
+      setSaveError(err?.data?.message || "Ma'lumotlarni saqlashda xatolik yuz berdi.");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const savePassword = (e) => {
+  const [pwSaving, setPwSaving] = useState(false);
+
+  const savePassword = async (e) => {
     e.preventDefault();
     if (!pw.current) return setPwMsg({ type: "error", text: "Joriy parolni kiriting." });
     if (pw.next.length < 6) return setPwMsg({ type: "error", text: "Yangi parol kamida 6 belgidan iborat bo'lishi kerak." });
     if (pw.next !== pw.confirm) return setPwMsg({ type: "error", text: "Yangi parollar mos kelmadi." });
-    setPwMsg({ type: "success", text: "Parol muvaffaqiyatli yangilandi." });
-    setPw({ current: "", next: "", confirm: "" });
+
+    setPwSaving(true);
+    try {
+      await profileApi.changePassword(pw.current, pw.next);
+      setPwMsg({ type: "success", text: "Parol muvaffaqiyatli yangilandi." });
+      setPw({ current: "", next: "", confirm: "" });
+    } catch (err) {
+      setPwMsg({
+        type: "error",
+        text: err?.data?.message || "Parolni yangilashda xatolik yuz berdi.",
+      });
+    } finally {
+      setPwSaving(false);
+    }
   };
 
   return (
@@ -140,6 +167,11 @@ export default function Profile() {
                 <CheckCircle2 className="w-4 h-4" />Ma'lumotlar saqlandi.
               </div>
             )}
+            {saveError && (
+              <div className="mb-4 flex items-center gap-2 p-3 rounded-xl bg-red-500/10 text-red-600 dark:text-red-400 text-sm font-medium">
+                <AlertCircle className="w-4 h-4" />{saveError}
+              </div>
+            )}
             <form onSubmit={saveProfile} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="p-first">Ism</Label>
@@ -158,8 +190,9 @@ export default function Profile() {
                 <Input id="p-phone" value={form.phone} onChange={update("phone")} required />
               </div>
               <div className="sm:col-span-2 pt-2">
-                <Button type="submit" className="navy-gradient hover:opacity-90">
-                  <Save className="w-4 h-4 mr-2" />Saqlash
+                <Button type="submit" disabled={saving} className="navy-gradient hover:opacity-90">
+                  {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                  Saqlash
                 </Button>
               </div>
             </form>
@@ -186,8 +219,9 @@ export default function Profile() {
                 <Input id="pw-confirm" type="password" value={pw.confirm} onChange={(e) => setPw({ ...pw, confirm: e.target.value })} required />
               </div>
               <div className="sm:col-span-2 pt-2">
-                <Button type="submit" className="navy-gradient hover:opacity-90">
-                  <KeyRound className="w-4 h-4 mr-2" />Parolni yangilash
+                <Button type="submit" disabled={pwSaving} className="navy-gradient hover:opacity-90">
+                  {pwSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <KeyRound className="w-4 h-4 mr-2" />}
+                  Parolni yangilash
                 </Button>
               </div>
             </form>
