@@ -1,11 +1,27 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Wallet, CalendarCheck, BookOpen, TrendingUp, Clock, MapPin, CheckCircle2, Star } from "lucide-react";
 import StatCard from "@/components/ui/StatCard";
 import { StatusBadge } from "@/pages/admin/AdminDashboard";
-// TODO: Replace mock student dashboard data with API responses before production.
+import { useAuth } from "@/lib/AuthContext";
+import { studentsApi } from "@/api/services/studentsApi";
+// TODO: attendance%, progress%, balans, haftalik jadval, uy vazifalari va
+// to'lovlar tarixi hali mock — har biri alohida backend agregatsiyasi kerak.
 import { studentInfo, studentSchedule, studentHomework, studentPayments, formatMoney } from "@/lib/mockData";
 
 export default function StudentDashboard() {
+  const { user } = useAuth();
+  const [groupLabel, setGroupLabel] = useState("");
+
+  useEffect(() => {
+    studentsApi.my()
+      .then((res) => {
+        const p = res as { studentGroups?: Array<{ group: { name: string; course?: { name: string } } }> };
+        const g = p.studentGroups?.[0]?.group;
+        if (g) setGroupLabel([g.course?.name, g.name].filter(Boolean).join(" · "));
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* Welcome banner */}
@@ -14,8 +30,8 @@ export default function StudentDashboard() {
         <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <p className="text-white/60 text-sm">Salom, 👋</p>
-            <h2 className="font-heading font-bold text-2xl lg:text-3xl mt-1">{studentInfo.firstName} {studentInfo.lastName}</h2>
-            <p className="text-white/60 mt-1">{studentInfo.course} · {studentInfo.group}</p>
+            <h2 className="font-heading font-bold text-2xl lg:text-3xl mt-1">{user?.firstName} {user?.lastName}</h2>
+            <p className="text-white/60 mt-1">{groupLabel || "Guruh biriktirilmagan"}</p>
           </div>
           <div className="flex gap-6">
             <div>
