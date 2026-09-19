@@ -157,4 +157,33 @@ export const apiClient = {
             body: JSON.stringify({ oldPassword, newPassword }),
         });
     },
+    // Diqqat: bu yerda Content-Type ataylab o'rnatilmaydi — FormData yuborilganda
+    // brauzerning o'zi to'g'ri "multipart/form-data; boundary=..." headerini qo'yishi kerak.
+    // Agar uni qo'lda "application/json" qilib qo'ysak, server faylni o'qiy olmay qoladi.
+    async uploadPhoto(file: File): Promise<User> {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const headers = new Headers();
+        const token = localStorage.getItem("accessToken");
+        if (token) headers.set("Authorization", `Bearer ${token}`);
+
+        const response = await fetch(`${apiBaseUrl}/users/me/photo`, {
+            method: "POST",
+            headers,
+            body: formData,
+            credentials: "include",
+        });
+        const data = await response.json().catch(() => null);
+
+        if (!response.ok) {
+            const error = new Error(
+                typeof data?.message === "string" ? data.message : "Rasm yuklanmadi",
+            ) as ApiError;
+            error.status = response.status;
+            error.data = data;
+            throw error;
+        }
+        return data as User;
+    },
 };

@@ -21,4 +21,7 @@ export const profileApi = {
     changePassword(oldPassword: string, newPassword: string) {
         return apiClient.changePassword(oldPassword, newPassword);
     },
+    uploadPhoto(file: File) {
+        return apiClient.uploadPhoto(file);
+    },
 };

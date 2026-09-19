@@ -1,13 +1,20 @@
-import React, { useState } from "react";
-import { Camera, Save, KeyRound, CheckCircle2, AlertCircle } from "lucide-react";
+import React, { useRef, useState } from "react";
+import { Camera, Save, KeyRound, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/AuthContext";
+import { profileApi } from "@/api/services/profileApi";
+
+const ALLOWED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const MAX_PHOTO_SIZE = 5 * 1024 * 1024; // 5 MB — backend ham shu chegarani qo'yadi
 
 export default function Profile() {
-  const { user } = useAuth();
+  const { user, checkUserAuth } = useAuth();
+  const fileInputRef = useRef(null);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [photoError, setPhotoError] = useState("");
   const [form, setForm] = useState({
     firstName: user?.firstName || "",
     lastName: user?.lastName || "",
@@ -34,6 +41,39 @@ export default function Profile() {
     setSaved(false);
   };
 
+  const handlePhotoClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handlePhotoSelect = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // xuddi shu faylni qayta tanlasa ham onChange ishlashi uchun
+    if (!file) return;
+
+    setPhotoError("");
+
+    if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
+      setPhotoError("Faqat JPEG, PNG yoki WEBP formatidagi rasm yuklash mumkin.");
+      return;
+    }
+    if (file.size > MAX_PHOTO_SIZE) {
+      setPhotoError("Rasm hajmi 5 MB dan oshmasligi kerak.");
+      return;
+    }
+
+    setPhotoUploading(true);
+    try {
+      await profileApi.uploadPhoto(file);
+      await checkUserAuth(); // yangi rasmni serverdan qayta olib kelish uchun
+    } catch (err) {
+      setPhotoError(
+        err?.data?.message || "Rasm yuklashda xatolik yuz berdi. Qayta urinib ko'ring.",
+      );
+    } finally {
+      setPhotoUploading(false);
+    }
+  };
+
   const saveProfile = (e) => {
     e.preventDefault();
     setSaved(true);
@@ -52,16 +92,37 @@ export default function Profile() {
     <div className="grid grid-cols-1 lg:grid-cols-[300px,1fr] gap-6 items-start">
       <div className="bg-card rounded-2xl border border-border p-6 text-center">
         <div className="relative w-24 h-24 mx-auto">
-          <div className="w-24 h-24 rounded-2xl navy-gradient flex items-center justify-center text-white text-2xl font-heading font-bold">
-            {form.firstName[0]}{form.lastName[0]}
-          </div>
+          {user?.photo ? (
+            <img
+              src={user.photo}
+              alt={`${form.firstName} ${form.lastName}`}
+              className="w-24 h-24 rounded-2xl object-cover"
+            />
+          ) : (
+            <div className="w-24 h-24 rounded-2xl navy-gradient flex items-center justify-center text-white text-2xl font-heading font-bold">
+              {form.firstName[0]}{form.lastName[0]}
+            </div>
+          )}
           <button
-            className="absolute -bottom-1 -right-1 w-8 h-8 rounded-xl accent-gradient text-white flex items-center justify-center shadow-lg"
+            type="button"
+            onClick={handlePhotoClick}
+            disabled={photoUploading}
+            className="absolute -bottom-1 -right-1 w-8 h-8 rounded-xl accent-gradient text-white flex items-center justify-center shadow-lg disabled:opacity-60"
             aria-label="Profil rasmini o'zgartirish"
           >
-            <Camera className="w-4 h-4" />
+            {photoUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
           </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            hidden
+            onChange={handlePhotoSelect}
+          />
         </div>
+        {photoError && (
+          <p className="mt-3 text-xs text-red-500">{photoError}</p>
+        )}
         <p className="mt-4 font-heading font-bold text-lg">{form.firstName} {form.lastName}</p>
         <p className="text-sm text-muted-foreground">{user?.role || "Foydalanuvchi"}</p>
       </div>
